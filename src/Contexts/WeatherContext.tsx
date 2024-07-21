@@ -28,13 +28,9 @@ export const WeatherProvider = ({ children }: { children: ReactNode }) => {
 
     // Methods
     const fetchGeoLocation = async () => {
-        const baseURL = import.meta.env.NODE_ENV === 'production'
-        ? 'https://geocoding.geo.census.gov'
-        : '/api';
-
         const options = {
             method: 'GET',
-            url: `${baseURL}/geocoder/locations/onelineaddress`,
+            url: '/api/geocoder/locations/onelineaddress',
             params: {
                 address,
                 benchmark: 'Public_AR_Current',
