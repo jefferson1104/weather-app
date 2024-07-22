@@ -1,30 +1,43 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-undef */
+// netlify/functions/geocode.js
 const axios = require('axios');
 
-exports.handler = async (event) => {
+exports.handler = async function(event, context) {
   const { address } = event.queryStringParameters;
 
-  try {
-    const response = await axios.get('https://geocoding.geo.census.gov', {
-      params: {
-        address,
-        benchmark: 'Public_AR_Current',
-        vintage: 'Current_Current',
-        format: 'json',
-      },
-    });
+  const options = {
+    method: 'GET',
+    url: 'https://geocoding.geo.census.gov/geocoder/locations/onelineaddress',
+    params: {
+      address,
+      benchmark: 'Public_AR_Current',
+      vintage: 'Current_Current',
+      format: 'json'
+    },
+  };
 
-    console.log('RESPONSE =>', response)
+  try {
+    const response = await axios.request(options);
+    const data = response.data.result.addressMatches[0];
+
+    if (!data) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ message: 'This place does not exist. Please try again' })
+      };
+    }
 
     return {
       statusCode: 200,
-      body: JSON.stringify(response),
+      body: JSON.stringify(data)
     };
   } catch (error) {
+    console.error('Error in serverless function:', error);
     return {
-      statusCode: error.response.status,
-      body: JSON.stringify(error),
+      statusCode: 500,
+      body: JSON.stringify({ message: 'Internal Server Error' })
     };
   }
 };
