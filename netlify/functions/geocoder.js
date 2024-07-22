@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable no-undef */
 const axios = require('axios');
 
-exports.handler = async (event, context) => {
+exports.handler = async (event) => {
   const { address } = event.queryStringParameters;
 
   try {
@@ -13,14 +15,16 @@ exports.handler = async (event, context) => {
       },
     });
 
+    console.log('RESPONSE =>', response)
+
     return {
       statusCode: 200,
-      body: JSON.stringify(response.data),
+      body: JSON.stringify(response),
     };
   } catch (error) {
     return {
       statusCode: error.response.status,
-      body: JSON.stringify({ message: error.message }),
+      body: JSON.stringify(error),
     };
   }
 };
