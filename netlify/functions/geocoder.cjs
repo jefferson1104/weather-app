@@ -1,11 +1,17 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-undef */
-// netlify/functions/geocode.js
+// netlify/functions/geocode.cjs
 const axios = require('axios');
 
 exports.handler = async function(event, context) {
+  console.log('Query Parameters:', event.queryStringParameters);
+
   const { address } = event.queryStringParameters;
+
+  if (!address) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ message: 'Address parameter is required' })
+    };
+  }
 
   const options = {
     method: 'GET',
@@ -19,7 +25,9 @@ exports.handler = async function(event, context) {
   };
 
   try {
+    console.log('Request Options:', options);
     const response = await axios.request(options);
+    console.log('API Response:', response.data);
     const data = response.data.result.addressMatches[0];
 
     if (!data) {
@@ -37,7 +45,7 @@ exports.handler = async function(event, context) {
     console.error('Error in serverless function:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: 'Internal Server Error' })
+      body: JSON.stringify({ message: 'Internal Server Error', error: error.message })
     };
   }
 };
