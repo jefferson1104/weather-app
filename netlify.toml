@@ -1,5 +1,5 @@
 [build]
   publish = "dist"
-  Functions = "netlify/functions"
+  functions = "netlify/functions"
   command = "npm run build"
   NODE_ENV = "8.11.3"

@@ -1,50 +1,34 @@
-import axios from "axios";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
-export default async (request, context) => {
-    console.log('Query Parameters:', request);
-    const { address } = request.queryStringParameters;
+import type { Handler, HandlerEvent, HandlerContext } from "@netlify/functions";
 
-    if (!address) {
-        return {
-          statusCode: 400,
-          body: JSON.stringify({ message: 'Address parameter is required' })
-        };
-    }
+const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
+  const { address, benchmark, vintage, format } = event.queryStringParameters as any;
 
-    const options = {
-        method: 'GET',
-        url: 'https://geocoding.geo.census.gov/geocoder/locations/onelineaddress',
-        params: {
-          address,
-          benchmark: 'Public_AR_Current',
-          vintage: 'Current_Current',
-          format: 'json'
-        },
-      };
+  const apiUrl = new URL('https://geocoding.geo.census.gov/geocoder/locations/onelineaddress');
+  apiUrl.searchParams.append('address', address || '');
+  apiUrl.searchParams.append('benchmark', benchmark || '');
+  apiUrl.searchParams.append('vintage', vintage || '');
+  apiUrl.searchParams.append('format', format || '');
 
-    try {
-        console.log('Request Options:', options);
-        const response = await axios.request(options);
-        console.log('API Response:', response.data);
+  try {
+    const response = await fetch(apiUrl.toString());
+    const data = await response.json();
 
-        const data = response.data.result.addressMatches[0];
+    return {
+      statusCode: 200,
+      body: JSON.stringify(data)
+    };
 
-        if (!data) {
-            return {
-              statusCode: 404,
-              body: JSON.stringify({ message: 'This place does not exist. Please try again' })
-            };
-        }
+  } catch (error) {
+    console.log('SERVER LESS FUNCTION ERROR =>', error);
 
-        return {
-            statusCode: 200,
-            body: JSON.stringify(data)
-        };
-    } catch (error) {
-        console.error('Error in serverless function:', error);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ message: 'Internal Server Error', error })
-        };
-    }
-}
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Error fetching data from Census API' }),
+    };
+  }
+};
+
+export { handler };
