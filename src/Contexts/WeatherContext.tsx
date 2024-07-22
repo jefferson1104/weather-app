@@ -28,9 +28,6 @@ export const WeatherProvider = ({ children }: { children: ReactNode }) => {
 
     // Methods
     const fetchGeoLocation = async () => {
-        const isProduction = import.meta.env.PROD;
-        console.log('isProduction: ', isProduction);
-
         const options = {
             method: 'GET',
             url: '/api/geocoder/locations/onelineaddress',
@@ -42,17 +39,9 @@ export const WeatherProvider = ({ children }: { children: ReactNode }) => {
             },
         };
 
-        const prodOptions = {
-            method: 'GET',
-            url: '/.netlify/functions/geocode',
-            params: {
-              address,
-            },
-          };
-
         try {
             setSearchAddressLoading(true);
-            const response = await axios.request(isProduction ? prodOptions : options);
+            const response = await axios.request(options);
             const data = response.data.result.addressMatches[0] as IGeolocation;
 
             if (!data) {
